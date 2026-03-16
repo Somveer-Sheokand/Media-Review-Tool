@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Media Review Tool</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+body{
+font-family:Inter,sans-serif;
+background:linear-gradient(135deg,#0f172a,#1e293b);
+color:white;
+min-height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+header{
+width:100%;
+padding:16px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:rgba(0,0,0,0.4);
+}
+
+header h2{
+font-size:18px;
+}
+
+.file{
+background:#2563eb;
+padding:8px 14px;
+border-radius:6px;
+cursor:pointer;
+font-size:14px;
+}
+
+input[type=file]{
+display:none;
+}
+
+main{
+width:100%;
+max-width:900px;
+padding:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.03);
+border-radius:14px;
+padding:20px;
+box-shadow:0 10px 40px rgba(0,0,0,0.6);
+text-align:center;
+}
+
+.media-box{
+display:flex;
+justify-content:center;
+align-items:center;
+width:100%;
+margin-top:15px;
+}
+
+img,video{
+max-width:100%;
+max-height:75vh;
+object-fit:contain;
+border-radius:12px;
+box-shadow:0 12px 40px rgba(0,0,0,0.35);
+}
+
+.controls{
+display:flex;
+justify-content:center;
+gap:12px;
+flex-wrap:wrap;
+margin-top:15px;
+}
+
+button{
+padding:10px 16px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:14px;
+}
+
+.good{
+background:#22c55e;
+color:black;
+}
+
+.bad{
+background:#ef4444;
+color:white;
+}
+
+.nav{
+background:#334155;
+color:white;
+}
+
+.speed{
+margin-top:12px;
+font-size:14px;
+}
+
+.stats{
+display:flex;
+justify-content:center;
+gap:20px;
+flex-wrap:wrap;
+margin-top:18px;
+font-size:14px;
+}
+
+.progress{
+height:6px;
+background:#1e293b;
+border-radius:10px;
+margin-top:14px;
+overflow:hidden;
+}
+
+.bar{
+height:100%;
+background:#22c55e;
+width:0%;
+transition:.3s;
+}
+
+footer{
+margin-top:auto;
+padding:12px;
+font-size:12px;
+opacity:.6;
+}
+
+@media(max-width:600px){
+
+header h2{
+font-size:16px;
+}
+
+button{
+padding:9px 14px;
+font-size:13px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h2>Media Review Tool</h2>
+
+<label class="file">
+Upload CSV
+<input type="file" id="csvFile" accept=".csv">
+</label>
+
+</header>
+
+<main>
+
+<div class="card" id="viewer" style="display:none">
+
+<h3>ID: <span id="itemid"></span></h3>
+
+<div class="media-box">
+
+<img id="img" style="display:none">
+
+<video id="video" controls style="display:none"></video>
+
+</div>
+
+<div class="speed">
+Speed
+<select id="speed" onchange="changeSpeed()">
+<option value="0.5">0.5x</option>
+<option value="1" selected>1x</option>
+<option value="1.25">1.25x</option>
+<option value="1.5">1.5x</option>
+<option value="2">2x</option>
+</select>
+</div>
+
+<div class="controls">
+
+<button class="bad" onclick="mark('bad')">Bad (B)</button>
+
+<button class="good" onclick="mark('good')">Good (G)</button>
+
+</div>
+
+<div class="controls">
+
+<button class="nav" onclick="go(-1)">Prev</button>
+
+<span id="counter"></span>
+
+<button class="nav" onclick="go(1)">Next</button>
+
+</div>
+
+<div class="progress">
+<div class="bar" id="progressBar"></div>
+</div>
+
+<div class="stats">
+
+<div>Total: <span id="total">0</span></div>
+
+<div>Reviewed: <span id="reviewed">0</span></div>
+
+<div>Good: <span id="good">0</span></div>
+
+<div>Bad: <span id="bad">0</span></div>
+
+</div>
+
+<div class="controls">
+
+<button onclick="exportBad()">Export Bad CSV</button>
+
+<button onclick="exportAll()">Export All CSV</button>
+
+</div>
+
+</div>
+
+</main>
+
+<footer>
+CSV format: id,url
+</footer>
+
+<script>
+
+let DATA=[]
+let index=0
+let results={}
+
+document.getElementById("csvFile").addEventListener("change",loadCSV)
+
+function loadCSV(e){
+
+let file=e.target.files[0]
+
+/* STOP previous video */
+
+let video=document.getElementById("video")
+video.pause()
+video.currentTime=0
+video.src=""
+
+/* reset */
+
+DATA=[]
+results={}
+index=0
+
+let reader=new FileReader()
+
+reader.onload=function(){
+
+let rows=reader.result.trim().split("\n")
+
+for(let i=1;i<rows.length;i++){
+
+let cols=rows[i].split(",")
+
+DATA.push({
+id:cols[0].trim(),
+url:cols[1].trim()
+})
+
+}
+
+document.getElementById("viewer").style.display="block"
+
+render()
+
+}
+
+reader.readAsText(file)
+
+}
+
+function render(){
+
+if(DATA.length===0)return
+
+let item=DATA[index]
+
+let url=item.url.toLowerCase()
+
+let img=document.getElementById("img")
+let video=document.getElementById("video")
+
+/* stop previous */
+
+video.pause()
+video.currentTime=0
+
+img.style.display="none"
+video.style.display="none"
+
+if(url.match(/\.(jpg|jpeg|png|gif|webp)$/)){
+
+img.src=item.url
+img.style.display="block"
+
+}else{
+
+video.src=item.url
+video.style.display="block"
+
+video.play().catch(()=>{})
+
+video.playbackRate=document.getElementById("speed").value
+
+}
+
+document.getElementById("itemid").innerText=item.id
+
+document.getElementById("counter").innerText=(index+1)+" / "+DATA.length
+
+updateStats()
+
+}
+
+function changeSpeed(){
+
+let speed=document.getElementById("speed").value
+
+document.getElementById("video").playbackRate=speed
+
+}
+
+function mark(type){
+
+results[DATA[index].id]=type
+
+if(index<DATA.length-1){
+index++
+}
+
+render()
+
+}
+
+function go(step){
+
+index+=step
+
+if(index<0)index=0
+if(index>=DATA.length)index=DATA.length-1
+
+render()
+
+}
+
+function updateStats(){
+
+let good=0
+let bad=0
+
+Object.values(results).forEach(v=>{
+
+if(v==="good")good++
+if(v==="bad")bad++
+
+})
+
+document.getElementById("total").innerText=DATA.length
+document.getElementById("reviewed").innerText=good+bad
+document.getElementById("good").innerText=good
+document.getElementById("bad").innerText=bad
+
+let progress=(good+bad)/DATA.length*100
+
+document.getElementById("progressBar").style.width=progress+"%"
+
+}
+
+function exportBad(){
+
+let rows=[["id","url"]]
+
+DATA.forEach(d=>{
+if(results[d.id]==="bad"){
+rows.push([d.id,d.url])
+}
+})
+
+download(rows,"bad_media.csv")
+
+}
+
+function exportAll(){
+
+let rows=[["id","url","result"]]
+
+DATA.forEach(d=>{
+rows.push([d.id,d.url,results[d.id]||""])
+})
+
+download(rows,"all_results.csv")
+
+}
+
+function download(rows,name){
+
+let csv=rows.map(r=>r.join(",")).join("\n")
+
+let blob=new Blob([csv])
+
+let a=document.createElement("a")
+
+a.href=URL.createObjectURL(blob)
+
+a.download=name
+
+a.click()
+
+}
+
+document.addEventListener("keydown",e=>{
+
+if(e.key==="ArrowRight")go(1)
+if(e.key==="ArrowLeft")go(-1)
+if(e.key==="g"||e.key==="G")mark("good")
+if(e.key==="b"||e.key==="B")mark("bad")
+
+})
+
+</script>
+
+</body>
+</html>
