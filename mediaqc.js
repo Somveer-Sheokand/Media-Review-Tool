@@ -16,6 +16,7 @@ let currentVideo = null;
 let autoAdvanceTimer = null;
 let randomMode = false;       // dynamic random mode (can be toggled)
 let sampleSize = 10;          // from config input
+let resultColIdx = -1;        // index of 'result' column if present
 
 // DOM elements
 const landingPage = document.getElementById('landing-page');
@@ -60,6 +61,21 @@ const randomSizeControl = document.getElementById('randomSizeControl');
 const dynamicSampleSize = document.getElementById('dynamicSampleSize');
 const btnGood = document.getElementById('btnGood');
 const btnBad = document.getElementById('btnBad');
+const reviewPanel = document.getElementById('reviewPanel');
+
+// ========== MOBILE PANEL TOGGLE ==========
+window.toggleMobilePanel = function() {
+  reviewPanel.classList.toggle('show-mobile');
+};
+
+// Close panel when clicking outside (optional)
+document.addEventListener('click', (e) => {
+  if (window.innerWidth <= 900) {
+    if (!reviewPanel.contains(e.target) && !e.target.closest('.mobile-menu-btn')) {
+      reviewPanel.classList.remove('show-mobile');
+    }
+  }
+});
 
 // ========== CSV PARSER ==========
 function parseCSV(text) {
@@ -98,6 +114,13 @@ function loadCSV(file) {
       return row;
     });
     if (rawData.length === 0) { toast('No valid data rows'); return; }
+
+    // Detect result column (case-insensitive)
+    resultColIdx = headers.findIndex(h => h.toLowerCase() === 'result');
+    if (resultColIdx !== -1) {
+      toast('ℹ️ Existing "result" column detected – pre-loading reviews');
+    }
+
     fileInput.value = '';
     landingFile.value = '';
     showConfig();
@@ -138,6 +161,8 @@ function showConfig() {
 
   extraFields.innerHTML = '';
   headers.forEach((h,i) => {
+    // Don't show result column as extra field (optional)
+    if (i === resultColIdx) return; // skip result column from extra fields
     const lbl = document.createElement('label');
     lbl.innerHTML = `<input type="checkbox" value="${i}"> ${h}`;
     extraFields.appendChild(lbl);
@@ -175,7 +200,22 @@ window.startReview = function() {
 
   if (dataset.length === 0) { toast('No valid media URLs found'); return; }
 
+  // Initialize results from existing result column if present
   results = {};
+  if (resultColIdx !== -1) {
+    rawData.forEach((row, index) => {
+      const id = row[config.idIdx];
+      if (id) {
+        const resultVal = row[resultColIdx] ? row[resultColIdx].trim().toLowerCase() : '';
+        if (resultVal === 'good' || resultVal === 'bad') {
+          results[id] = resultVal;
+        }
+      }
+    });
+    const loadedCount = Object.keys(results).length;
+    if (loadedCount > 0) toast(`✅ Loaded ${loadedCount} existing reviews`);
+  }
+
   sampleSize = parseInt(sampleSizeInput.value) || 10;
   randomMode = randomCheck.checked; // initial mode from config
 
@@ -184,8 +224,17 @@ window.startReview = function() {
     newBatchBtn.style.display = 'block';
     randomSizeControl.style.display = 'flex';
   } else {
-    currentBatch = Array.from({ length: dataset.length }, (_, i) => i);
+    // Sequential mode: only include unreviewed items
+    currentBatch = [];
+    dataset.forEach((item, idx) => {
+      if (!results[item.id]) currentBatch.push(idx);
+    });
     currentBatchIndex = 0;
+    if (currentBatch.length === 0) {
+      toast('🎉 All items already reviewed!');
+      // fallback: include all items? or stay empty?
+      currentBatch = Array.from({ length: dataset.length }, (_, i) => i);
+    }
     newBatchBtn.style.display = 'none';
     randomSizeControl.style.display = 'none';
   }
@@ -215,8 +264,12 @@ randomModeToggle.addEventListener('click', () => {
     randomSizeControl.style.display = 'flex';
     toast('✨ Random mode activated');
   } else {
-    // Switching to sequential mode: set batch to full dataset
-    currentBatch = Array.from({ length: dataset.length }, (_, i) => i);
+    // Switching to sequential mode: set batch to all unreviewed items
+    currentBatch = [];
+    dataset.forEach((item, idx) => {
+      if (!results[item.id]) currentBatch.push(idx);
+    });
+    if (currentBatch.length === 0) currentBatch = Array.from({ length: dataset.length }, (_, i) => i);
     currentBatchIndex = Math.min(currentBatchIndex, currentBatch.length - 1);
     newBatchBtn.style.display = 'none';
     randomSizeControl.style.display = 'none';
@@ -316,8 +369,8 @@ function render() {
   gotoIndex.value = currentBatchIndex + 1;
 
   const isVideo = config.mediaType === 'video' ? true :
-                    (config.mediaType === 'image' ? false :
-                     /\.(mp4|webm|ogg|mov|m4v|avi)(\?|$)/i.test(item.url));
+                  (config.mediaType === 'image' ? false :
+                   /\.(mp4|webm|ogg|mov|m4v|avi)(\?|$)/i.test(item.url));
 
   if (currentVideo) {
     currentVideo.pause();
@@ -442,8 +495,7 @@ document.getElementById('autoplayToggle').addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
   if (configScreen.style.display === 'flex' || landingPage.style.display !== 'none') return;
   if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) {
-    // Allow typing in gotoIndex, but still handle shortcuts if not typing there?
-    if (e.target === gotoIndex) return; // let default behavior
+    if (e.target === gotoIndex) return;
   }
   const isVideo = currentVideo !== null;
   switch (e.key) {
@@ -458,7 +510,7 @@ document.addEventListener('keydown', (e) => {
 
 // ========== EXPORT ==========
 window.exportCSV = function(type) {
-  const headerRow = [...headers, 'result'];
+  const headerRow = [...headers, 'result'];  // always append result column
   let rows = [headerRow];
 
   if (type === 'full') {
@@ -496,6 +548,25 @@ window.exportCSV = function(type) {
   URL.revokeObjectURL(a.href);
   toast(`✅ Exported ${type} CSV`);
 };
+
+// ========== SAFE RESET (export & reload) ==========
+window.safeReset = function() {
+  if (Object.keys(results).length > 0) {
+    let confirmExport = confirm("You have reviewed items. Export before reset?");
+    if (confirmExport) {
+      exportCSV('full');   // export full data with results
+    }
+  }
+  location.reload();
+};
+
+// ========== WARN ON REFRESH/F5 IF UNSAVED ==========
+window.addEventListener('beforeunload', (e) => {
+  if (Object.keys(results).length > 0) {
+    e.preventDefault();
+    e.returnValue = "You have unsaved reviews. Are you sure you want to leave?";
+  }
+});
 
 function toast(msg) {
   toastEl.textContent = msg;
