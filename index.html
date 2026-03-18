@@ -13,7 +13,7 @@
 
 <header>
   <div class="logo">
-    <div class="logo-mark">M</div>
+    <img src="https://whilter.ai/assets/logo-Dg5t-QTw.png" alt="MediaQC">
     <div class="logo-text">Media<span>QC</span></div>
   </div>
   <label class="upload-btn" id="uploadBtn">
@@ -88,7 +88,7 @@
 
 <!-- REVIEW SCREEN -->
 <div id="review-screen">
-  <div class="panel">
+  <div class="panel" id="reviewPanel">
     <div class="panel-section">
       <div class="panel-title">Progress</div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -150,7 +150,7 @@
     </div>
 
     <div class="panel-section">
-      <div class="panel-title">Export</div>
+      <div class="panel-title">Export & Reset</div>
       <button class="action-btn-small" onclick="exportCSV('full')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Full CSV
@@ -163,11 +163,21 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Bad CSV
       </button>
+      <!-- Reset button that calls safeReset -->
+      <button class="action-btn-small" onclick="safeReset()" style="border-color:var(--accent-danger); color:var(--accent-danger);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Reset Session
+      </button>
     </div>
   </div>
 
   <div class="viewer">
     <div class="viewer-top">
+      <!-- Mobile menu button -->
+      <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobilePanel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Menu</span>
+      </button>
       <!-- Go to item input -->
       <div class="goto-container">
         <span>Media</span>
@@ -189,7 +199,7 @@
     </div>
     <div class="video-bar" id="videoBar">
       <span style="color:var(--text-muted); font-size:0.75rem;">Speed</span>
-      <div style="display:flex; gap:6px;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
         <button class="speed-btn" data-speed="0.5">0.5×</button>
         <button class="speed-btn active" data-speed="1">1×</button>
         <button class="speed-btn" data-speed="1.5">1.5×</button>
