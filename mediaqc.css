@@ -41,9 +41,9 @@ body {
     radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.03) 0%, transparent 35%);
 }
 
-/* ---- glass header ---- */
+/* ---- glass header (adjusted for 90px logo) ---- */
 header {
-  height: 68px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -58,23 +58,18 @@ header {
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
-.logo-mark {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--accent-primary), #d97706);
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: grid;
-  place-items: center;
-  font-family: 'Bebas Neue', cursive;
-  font-size: 1.2rem;
-  color: #000;
-  box-shadow: 0 8px 12px -6px var(--accent-glow);
+.logo img {
+  height: 90px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
 }
 .logo-text {
   font-family: 'Bebas Neue', cursive;
-  font-size: 32px;
+  font-size: 40px;
   letter-spacing: 1.5px;
   background: linear-gradient(to right, #fff, #d1d9ff);
   -webkit-background-clip: text;
@@ -403,7 +398,7 @@ select:focus, .sampling-row:focus-within {
 #review-screen {
   display: none;
   grid-template-columns: 280px 1fr;
-  height: calc(100vh - 68px);
+  height: calc(100vh - 110px);
   overflow: hidden;
 }
 
@@ -414,6 +409,24 @@ select:focus, .sampling-row:focus-within {
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   overflow-y: auto;
   padding: 20px 16px;
+  transition: transform 0.3s ease;
+}
+
+/* Mobile panel toggle button (hidden on desktop) */
+.mobile-menu-btn {
+  display: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-accent);
+  border-radius: 60px;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  align-items: center;
+  gap: 4px;
+}
+.mobile-menu-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 .panel-section {
@@ -672,7 +685,7 @@ kbd {
   background: rgba(10, 15, 26, 0.8);
   backdrop-filter: blur(12px);
   z-index: 5;
-  gap: 16px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .viewer-id {
@@ -736,7 +749,7 @@ kbd {
 .media-frame img,
 .media-frame video {
   max-width: 100%;
-  max-height: calc(100vh - 280px);
+  max-height: calc(100vh - 330px);
   object-fit: contain;
   border-radius: 28px;
   box-shadow: var(--shadow-card), 0 0 0 1px rgba(255,255,255,0.02);
@@ -806,7 +819,7 @@ kbd {
   backdrop-filter: blur(12px);
   z-index: 5;
 }
-.video-bar.show { display: flex; }
+.video-bar.show { display: flex; flex-wrap: wrap; }
 .speed-btn {
   background: var(--bg-elevated);
   border: 1px solid var(--border-light);
@@ -874,6 +887,7 @@ kbd {
   position: relative;
   bottom: 0;
   width: 100%;
+  flex-wrap: wrap;
 }
 .action-btn {
   border: none;
@@ -979,10 +993,78 @@ kbd {
   opacity: 1;
 }
 
+/* ========== MOBILE RESPONSIVE ========== */
 @media (max-width: 900px) {
   #review-screen {
     grid-template-columns: 1fr;
   }
-  .panel { display: none; }
-  header { padding: 0 20px; }
+  .panel {
+    position: fixed;
+    top: 110px;
+    left: 0;
+    bottom: 0;
+    width: 85%;
+    max-width: 320px;
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    border-right: 1px solid var(--border-accent);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+  }
+  .panel.show-mobile {
+    transform: translateX(0);
+  }
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+  .viewer-top {
+    padding: 10px 12px;
+  }
+  .goto-container span {
+    font-size: 0.7rem;
+  }
+  #gotoIndex {
+    width: 50px;
+    padding: 4px 4px;
+  }
+  .action-btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+  .nav-btn {
+    padding: 10px 16px;
+  }
+  .video-bar {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .speed-btn {
+    padding: 4px 10px;
+    font-size: 0.65rem;
+  }
+  .autoplay-toggle span {
+    font-size: 0.7rem;
+  }
+  .media-frame img,
+  .media-frame video {
+    max-height: calc(100vh - 280px);
+  }
+}
+
+@media (max-width: 480px) {
+  .action-bar {
+    gap: 8px;
+    padding: 10px 8px;
+  }
+  .action-btn {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+  .nav-btn {
+    padding: 8px 12px;
+  }
+  .viewer-id {
+    font-size: 0.75rem;
+    padding: 2px 10px;
+  }
 }
