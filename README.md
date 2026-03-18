@@ -1,146 +1,146 @@
-# 🎬 Media Review Tool
+MediaQC – Intelligent Media Review Tool
+MediaQC is a browser‑based application for rapid manual review of image and video datasets. It provides a clean, keyboard‑first interface to help you efficiently score media items (good/bad) after importing a CSV file. Perfect for quality assurance, data cleaning, or annotation projects.
 
-A simple **CSV-based media review web tool** for quickly reviewing and classifying **images or videos** as **Good** or **Bad**.
+📂 CSV Import – Drag & drop or click to upload any CSV file.
 
-Built using **HTML, CSS, and JavaScript** and runs entirely in the browser.  
-⚡ **No server, database, or installation required.**
+🧠 Smart Column Mapping – Automatically suggests ID and media URL columns.
 
----
+🖼️ Image & Video Support – Displays images inline; videos with playback controls, speed adjustment, and autoplay.
 
-## 🚀 Features
+🎲 Random Batch Sampling – Review a random subset of your data; generate new batches on the fly.
 
-- 📂 Upload CSV file containing media URLs
-- 🖼️ Review **images and videos**
-- 👍 Mark media as **Good** or **Bad**
-- ⏭️ Automatically move to the **next item**
-- ⌨️ **Keyboard shortcuts** for fast reviewing
-- 🎥 **Playback speed control** for videos
-- 📊 **Progress bar** and review statistics
-- 📥 Export results as **CSV**
-- 📱 Works on **desktop and mobile**
-- ⚡ Fully **client-side** (runs in browser)
+⌨️ Keyboard‑First Workflow – Navigate and score without touching the mouse.
 
----
+📊 Live Statistics – Track progress, good/bad counts per batch.
 
-## 📄 CSV Format
+📤 Export Filtered CSVs – Export full dataset, only good, or only bad items with results appended.
 
-Your CSV file must contain **two columns**:
+🌙 Dark Theme – Easy on the eyes for long review sessions.
 
-| Column | Description |
-|------|-------------|
-| `id` | Media identifier |
-| `url` | Direct image or video URL |
+Getting Started
+1. Download the Files
+Place the three files in the same folder:
 
-### Example
+mediaqc.html
 
-```csv
-id,url
-1,https://example.com/image1.jpg
-2,https://example.com/video1.mp4
-3,https://example.com/image2.png
-```
+mediaqc.css
 
----
+mediaqc.js
 
-## 🖼 Supported Media
+2. Open the Application
+Double‑click mediaqc.html to open it in any modern browser (Chrome, Firefox, Edge, Safari). No server or installation required – everything runs locally in your browser.
 
-### Images
+3. Import Your CSV
+Click the Import CSV button or drag a CSV file onto the landing page.
 
-- JPG
-- JPEG
-- PNG
-- GIF
-- WEBP
+The CSV must contain at least a header row and one data row.
 
-### Videos
+The tool works with any column structure – you will map the important columns in the next step.
 
-- MP4
-- WEBM
-- MOV
+4. Configure the Dataset
+After loading, the configuration screen appears:
 
----
+ID Column – Select the column that uniquely identifies each media item.
 
-## ⌨️ Keyboard Shortcuts
+Media URL Column – Select the column containing image/video URLs (local paths or web URLs).
 
-Speed up the review process using these shortcuts:
+Media Type – Choose auto‑detect (based on file extension), or force image/video only.
 
-| Key | Action |
-|-----|-------|
-| **G** | Mark media as **Good** |
-| **B** | Mark media as **Bad** |
-| **→ Arrow** | Next media |
-| **← Arrow** | Previous media |
+Extra Columns – Check any additional columns you want to display during review.
 
-Perfect for reviewing **large datasets quickly**.
+Random QC Batch – Enable random sampling and set the batch size.
 
----
+Click Start Review to begin.
 
-## 📤 Export Options
+Review Interface
+The screen is split into two main areas:
 
-### Export Bad CSV
-Exports only media marked **Bad**.
+Left Panel – Shows batch progress, statistics, current item metadata, keyboard shortcuts, and export buttons.
 
-### Export All CSV
-Exports **all media items** along with their **review results**.
+Right Viewer – Displays the media, current item ID, and scoring buttons.
 
----
+Scoring
+Click Good or Bad (or press G / B on your keyboard).
 
-## 🛠 How to Use
+After scoring, the app automatically advances to the next item (configurable auto‑advance delay).
 
-1. Open the tool in your browser.
-2. Upload your **CSV file**.
-3. Review each media item.
-4. Mark it as **Good** or **Bad**.
-5. Export results when finished.
+A coloured flash confirms your choice.
 
----
+Navigation
+Use the ← and → buttons, or the left/right arrow keys.
 
-## 📱 Browser Compatibility
+For videos, holding Ctrl while pressing arrow keys navigates between items (default behaviour is seeking ±5 seconds).
 
-Works on all modern browsers:
+Use the Go to item input to jump to a specific index within the current batch (press Enter or click away).
 
-- Chrome
-- Edge
-- Firefox
-- Safari
+Random Mode
+Toggle Random Mode on/off at any time using the switch in the left panel.
 
----
+When enabled, you can set a batch size and click New Random QC Batch to pull a fresh random sample of unreviewed items.
 
-## 💡 Use Cases
+The “✨ Random” badge appears next to the item ID when in random mode.
 
-- Dataset cleaning
-- AI/ML dataset labeling
-- Content moderation
-- Image/video quality review
-- Media filtering
+Video Controls
+Playback speed – 0.5×, 1×, 1.5×, 2×.
 
----
+Autoplay toggle – when on, videos start playing automatically.
 
-## 📸 Screenshots
+Seek – Left/right arrow keys seek ±5 seconds.
 
-*(Add screenshots here)*
+Space – Play/pause.
 
-```
-/screenshots/review-interface.png
-/screenshots/mobile-view.png
-```
+Keyboard Shortcuts
+Key(s)	Action
+G	Mark current item as Good
+B	Mark current item as Bad
+N	Generate new random batch (random mode only)
+← / →	Previous/next item (for images)
+Ctrl + ← / Ctrl + →	Previous/next item (for videos)
+← / → (video)	Seek backward/forward 5 seconds
+Space (video)	Play / pause
+ℹ️ When an input field (e.g., the “Go to item” box) has focus, keyboard shortcuts are disabled so you can type numbers. Click elsewhere to re‑enable shortcuts.
 
----
+Exporting Results
+After scoring, you can export CSV files with an extra result column appended:
 
-## 📄 License
+Full CSV – All rows, with results where available.
 
-This project is open-source and available under the **MIT License**.
+Good CSV – Only rows marked as good.
 
----
+Bad CSV – Only rows marked as bad.
 
-## ⭐ Support
+Exported files are named like mediaqc_full_2025-03-18T14-30-15.csv and include the original headers plus the result column.
 
-If you find this project useful:
+File Structure
+text
+/mediaqc
+├── mediaqc.html      # Main HTML structure
+├── mediaqc.css       # All styles (dark theme, layout)
+└── mediaqc.js        # Application logic
+No build step, no dependencies – just static files.
 
-- ⭐ Star the repository
-- 🍴 Fork the project
-- 🛠 Contribute improvements
+Browser Compatibility
+Chrome / Edge (latest)
 
----
+Firefox (latest)
 
-**Built with ❤️ using HTML, CSS, and JavaScript**
+Safari (latest)
+
+Works on desktop and tablet; responsive layout collapses left panel on narrow screens.
+
+Tips
+For local files, use file:// URLs or host your media on a local server.
+
+Large batches (thousands of items) work fine; the UI stays responsive.
+
+Use the random mode to spot‑check a dataset without reviewing everything.
+
+Acknowledgements
+Built with vanilla JavaScript, CSS, and HTML.
+
+Fonts: Inter, Bebas Neue, JetBrains Mono.
+
+Icons via inline SVG.
+
+Happy reviewing! 🎞️✅
+
