@@ -491,22 +491,41 @@
     autoplaySwitch.classList.toggle('on', autoplay);
     });
 
-    // ========== KEYBOARD ==========
-    document.addEventListener('keydown', (e) => {
+// ========== KEYBOARD ==========
+// useCapture:true intercepts BEFORE the video/button element handles it
+document.addEventListener('keydown', (e) => {
     if (configScreen.style.display === 'flex' || landingPage.style.display !== 'none') return;
-    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) {
-        if (e.target === gotoIndex) return;
-    }
+
     const isVideo = currentVideo !== null;
+
+    // Space ALWAYS controls video - captured before video element handles it
+    if (e.key === ' ' && isVideo) {
+        e.preventDefault();
+        e.stopPropagation();  // stop video element from also handling it
+        currentVideo.paused ? currentVideo.play() : currentVideo.pause();
+        return;
+    }
+
+    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName) && e.target !== gotoIndex) return;
+
     switch (e.key) {
         case 'g': case 'G': e.preventDefault(); mark('good'); break;
         case 'b': case 'B': e.preventDefault(); mark('bad'); break;
         case 'n': case 'N': e.preventDefault(); if (randomMode) newRandomBatch(); break;
-        case ' ': e.preventDefault(); if (isVideo) { if (currentVideo.paused) currentVideo.play(); else currentVideo.pause(); } break;
-        case 'ArrowRight': e.preventDefault(); if (e.ctrlKey || e.metaKey) navigate(1); else if (isVideo) currentVideo.currentTime += 5; else navigate(1); break;
-        case 'ArrowLeft': e.preventDefault(); if (e.ctrlKey || e.metaKey) navigate(-1); else if (isVideo) currentVideo.currentTime -= 5; else navigate(-1); break;
+        case 'ArrowRight':
+            e.preventDefault();
+            if (e.ctrlKey || e.metaKey) navigate(1);
+            else if (isVideo) currentVideo.currentTime += 5;
+            else navigate(1);
+            break;
+        case 'ArrowLeft':
+            e.preventDefault();
+            if (e.ctrlKey || e.metaKey) navigate(-1);
+            else if (isVideo) currentVideo.currentTime -= 5;
+            else navigate(-1);
+            break;
     }
-    });
+}, true);  // <-- THIS IS THE FIX: true = capture phase
 
     // ========== EXPORT ==========
     window.exportCSV = function(type) {
